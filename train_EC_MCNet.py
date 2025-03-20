@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from utils.loss import CrossEntropyLoss2d, weighted_BCE_logits, ChangeSimilarity
 from utils.utils import accuracy, SCDD_eval_all, AverageMeter
 ###############################################
-from  SECOND_process as SP
+import  SECOND_process as SP
 from EC_MCNet import EC_MCNet as Net
 seed = 42
 working_path = ''
