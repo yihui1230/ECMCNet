@@ -1,10 +1,9 @@
 from torch.nn import init
-from utils.misc import initialize_weights
-import torchvision.models as models
 import torch
 import torch.nn.functional as F
 from einops import rearrange
 from torch import nn
+from TED import cd_Encoder
 
 class ConvBNReLU(nn.Sequential):
     def __init__(self, in_planes, out_planes, kernel_size=3, stride=1, groups=1, dilation=1):
@@ -121,30 +120,7 @@ class Cos_SpatialAttention(nn.Module):
         return out
 
 
-class cd_Encoder(nn.Module):
-    def __init__(self):
-        super(cd_Encoder, self).__init__()
-        self.resnet = models.resnet34(pretrained=True)
-        for n, m in self.resnet.layer3.named_modules():
-            if 'conv1' in n or 'downsample.0' in n:
-                m.stride = (1, 1)
-        for n, m in self.resnet.layer4.named_modules():
-            if 'conv1' in n or 'downsample.0' in n:
-                m.stride = (1, 1)
 
-        self.conv = nn.Sequential(nn.Conv2d(512+256+128, 128, 1), nn.BatchNorm2d(128), nn.ReLU())
-        initialize_weights(self.conv)
-
-    def forward(self, x):
-        x0 = self.resnet.relu(self.resnet.bn1(self.resnet.conv1(x)))
-        xm = self.resnet.maxpool(x0)
-        x1 = self.resnet.layer1(xm)
-        x2 = self.resnet.layer2(x1)
-        x3 = self.resnet.layer3(x2)
-        x4 = self.resnet.layer4(x3)
-        x4 = torch.cat([x2, x3, x4], 1)
-        x4 = self.conv(x4)
-        return x0, x1, x4
 
 
 class Attention_C(nn.Module):
@@ -320,27 +296,13 @@ class DSRM(nn.Module):
     def __init__(self):
         super(DSRM,self).__init__()
         self.block_1 = style_removal_block()
-        self.block_2 = style_removal_block()
-        self.block_3 = style_removal_block()
+
 
     def forward(self,x):
         x=self.block_1(x)
-        x = self.block_2(x)
-        x = self.block_3(x)
+
         return x
-class _DecoderBlock(nn.Module):
-    def __init__(self, in_channels_high, in_channels_low, out_channels, scale_ratio=1):
-        super(_DecoderBlock, self).__init__()
-        self.up = nn.ConvTranspose2d(in_channels_high, in_channels_high, kernel_size=2, stride=2)
-        in_channels = in_channels_high + in_channels_low//scale_ratio
 
-        self.decode =ResBlock(128, 128)
-
-    def forward(self, x, low_feat):
-        x = self.up(x)
-
-        x = self.decode(x)
-        return x
 
 class EC_MCNet(nn.Module):
     def __init__(self, num_classes=7,group=8):
@@ -351,7 +313,7 @@ class EC_MCNet(nn.Module):
         self.DSRM=DSRM()
         self.DEM = DEM(128)
         self.resCD = self._make_layer(ResBlock, 256, 128, 6, stride=1)
-        self.Dec1 = _DecoderBlock(128, 64, 128)
+
         self.semantic_pred_1 = make_prediction(128, num_classes)
         self.semantic_pred_2 = make_prediction(128, num_classes)
         self.cd_pred = make_prediction(128, 1)
@@ -399,8 +361,7 @@ class EC_MCNet(nn.Module):
         cdA_3=self.SEM(cdA_3)
         cdB_3 = self.SEM(cdB_3)
 
-        cdA_3 = self.Dec1(cdA_3, cdA_2)
-        cdB_3 = self.Dec1(cdB_3, cdB_2)
+
         cdA_31=self.DSRM(cdA_3)
         cdB_31=self.DSRM(cdB_3)
 
