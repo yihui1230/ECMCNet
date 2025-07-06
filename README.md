@@ -1,0 +1,1 @@
+The paper titled 'Enhancing Collaboration and Mitigating Conflict between Subtasks for Remote Sensing Semantic Change Detection' has been accepted by IEEE Transactions on Geoscience and Remote Sensing (TGRS).
