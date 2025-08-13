@@ -355,8 +355,8 @@ class EC_MCNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, xA, xB):
-        cdA_1, cdA_2, cdA_3 = self.net_cd(xA)
-        cdB_1, cdB_2, cdB_3 = self.net_cd(xB)
+        cdA_3 = self.net_cd(xA)
+        cdB_3 = self.net_cd(xB)
 
         cdA_3=self.SEM(cdA_3)
         cdB_3 = self.SEM(cdB_3)
@@ -375,3 +375,4 @@ class EC_MCNet(nn.Module):
 
 
         return (self.up4(cd_pred), self.up4(semantic_predA_1), self.up4(semantic_predB_1))
+
