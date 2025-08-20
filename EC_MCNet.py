@@ -308,7 +308,7 @@ class EC_MCNet(nn.Module):
     def __init__(self, num_classes=7,group=8):
         super(EC_MCNet, self).__init__()
         self.num_classes = num_classes
-        self.net_cd = cd_Encoder()
+        self.net_cd = TED()
         self.SEM=SEM(group)
         self.DSRM=DSRM()
         self.DEM = DEM(128)
@@ -375,5 +375,6 @@ class EC_MCNet(nn.Module):
 
 
         return (self.up4(cd_pred), self.up4(semantic_predA_1), self.up4(semantic_predB_1))
+
 
 
