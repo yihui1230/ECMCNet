@@ -3,7 +3,7 @@ import torch
 import torch.nn.functional as F
 from einops import rearrange
 from torch import nn
-from TED import cd_Encoder
+from TED import TED
 
 class ConvBNReLU(nn.Sequential):
     def __init__(self, in_planes, out_planes, kernel_size=3, stride=1, groups=1, dilation=1):
@@ -375,4 +375,5 @@ class EC_MCNet(nn.Module):
 
 
         return (self.up4(cd_pred), self.up4(semantic_predA_1), self.up4(semantic_predB_1))
+
 
